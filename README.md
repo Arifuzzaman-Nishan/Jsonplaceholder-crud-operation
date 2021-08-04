@@ -10,6 +10,7 @@
 
 - React Js
 - Material Table
+- axios
 
 ## ✨Features
 
