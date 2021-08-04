@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-vars */
 import axios from 'axios';
@@ -5,6 +6,7 @@ import MaterialTable from 'material-table';
 import React, { useEffect, useState } from 'react';
 
 export default function Home() {
+    // table columnlist
     const columnData = [
         {
             title: 'Name',
@@ -28,10 +30,11 @@ export default function Home() {
         },
     ];
 
+    // state for storing api data
     const [userData, setUserData] = useState([]);
-    // const [filterData, setFilterData] = useState([]);
 
-    // user api fetch
+    // state for tracking the selected row
+    const [selectedRow, setSelectedRow] = useState(null);
 
     useEffect(() => {
         axios
@@ -44,68 +47,68 @@ export default function Home() {
             });
     }, []);
 
-    console.log(userData);
-
-    // const filterData = [];
-
-    // userData.forEach((element) => {
-    //     filterData.push({
-    //         name: element.name,
-    //         username: element.username,
-    //         email: element.email,
-    //         phone: element.phone,
-    //         website: element.website,
-    //     });
-    // });
-
-    // console.log(filterData);
-
     return (
-        <div>
-            <h1>This is home component</h1>
-            <div style={{ maxWidth: '100%' }}>
-                <MaterialTable
-                    title="User Information"
-                    columns={columnData}
-                    data={userData}
-                    editable={{
-                        onRowAdd: (newData) =>
-                            axios
-                                .post('https://jsonplaceholder.typicode.com/users', newData)
-                                .then((res) => setUserData([...userData, newData])),
+        <div style={{ maxWidth: '100%' }}>
+            <MaterialTable
+                title="User Information"
+                columns={columnData}
+                data={userData}
+                // to select the specific row
+                onRowClick={(evt, selectedRow) => setSelectedRow(selectedRow.tableData.id)}
+                options={{
+                    // after selecting the row then it change the bg color
+                    rowStyle: (rowData) => ({
+                        backgroundColor: selectedRow === rowData.tableData.id ? '#EEE' : '#FFF',
+                    }),
+                    paging: false,
+                    exportAllData: true,
+                    exportButton: true,
+                }}
+                editable={{
+                    // Add new row
+                    onRowAdd: (newData) =>
+                        axios
+                            .post('https://jsonplaceholder.typicode.com/users', newData)
+                            .then((res) => setUserData([...userData, newData])),
 
-                        onRowUpdate: (newData, oldData) =>
-                            axios
-                                .patch(
-                                    `https://jsonplaceholder.typicode.com/users/${
-                                        oldData.tableData.id + 1
-                                    }`,
-                                    newData
-                                )
-                                .then((res) => {
-                                    console.log(res.data);
-                                    const dataUpdate = [...userData];
-                                    const index = oldData.tableData.id;
-                                    dataUpdate[index] = res.data;
-                                    setUserData(dataUpdate);
-                                }),
+                    // update row
+                    onRowUpdate: (newData, oldData) =>
+                        axios
+                            .patch(
+                                `https://jsonplaceholder.typicode.com/users/${
+                                    oldData.tableData.id + 1
+                                }`,
+                                newData
+                            )
+                            .then((res) => {
+                                console.log(res.data);
+                                const dataUpdate = [...userData];
+                                const index = oldData.tableData.id;
+                                dataUpdate[index] = res.data;
+                                setUserData(dataUpdate);
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                                console.log('nishan');
+                            }),
 
-                        onRowDelete: (oldData) =>
-                            axios
-                                .delete(
-                                    `https://jsonplaceholder.typicode.com/users/${
-                                        oldData.tableData.id + 1
-                                    }`
-                                )
-                                .then((res) => {
-                                    const dataDelete = [...userData];
-                                    const index = oldData.tableData.id;
-                                    dataDelete.splice(index, 1);
-                                    setUserData([...dataDelete]);
-                                }),
-                    }}
-                />
-            </div>
+                    // delete row
+                    onRowDelete: (oldData) =>
+                        axios
+                            .delete(
+                                `https://jsonplaceholder.typicode.com/users/${
+                                    oldData.tableData.id + 1
+                                }`
+                            )
+                            .then((res) => {
+                                const dataDelete = [...userData];
+                                const index = oldData.tableData.id;
+                                dataDelete.splice(index, 1);
+                                setUserData([...dataDelete]);
+                            })
+                            .catch((err) => console.log(err)),
+                }}
+            />
         </div>
     );
 }
